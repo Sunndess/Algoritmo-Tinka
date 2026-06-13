@@ -1,9 +1,378 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <meta http-equiv="refresh" content="0; url=static/index.html">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TINKA - Sistema de Predicción de Lotería</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .clock {
+      font-size: 14px;
+      opacity: 0.95;
+      background: rgba(255,255,255,0.06);
+      padding: 8px 12px;
+      border-radius: 10px;
+      display: inline-block;
+      color: white;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 30px 20px;
+    }
+
+    .buttons-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      min-width: 140px;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #btnUpdate {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    #btnUpdate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    #btnPredict {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    #btnPredict:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(245, 87, 108, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .download-link {
+      display: block;
+      padding: 12px 16px;
+      background: #f0f0f0;
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 12px;
+    }
+
+    .download-link:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    .status-box {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 60px;
+      margin-top: 20px;
+      border-left: 4px solid #667eea;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .status-box.loading {
+      border-left-color: #f5576c;
+    }
+
+    .status-box.success {
+      border-left-color: #1ed760;
+      background: #f0fdf4;
+    }
+
+    .status-box.error {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .loading-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 3px;
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .loading-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(102, 126, 234, 0.3);
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .status-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .number-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      animation: popIn 0.4s ease-out;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .boliyapa-card {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 12px;
+      animation: popIn 0.5s ease-out;
+      box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+    }
+
+    .boliyapa-number {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 24px 16px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+
+      .buttons-group {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .content {
+        padding: 24px 16px;
+      }
+
+      .number-card {
+        font-size: 20px;
+        padding: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <p>Redirigiendo a <a href="static/index.html">static/index.html</a>...</p>
+  <div class="container">
+    <div class="header">
+      <h1>🎰 TINKA</h1>
+      <p>Sistema Inteligente de Predicción</p>
+      <div id="clock" class="clock" style="margin-top:10px;">--:--:--</div>
+    </div>
+
+    <div class="content">
+      <div class="buttons-group">
+        <button id="btnUpdate">
+          <span>🔄</span>
+          <span>Actualizar</span>
+        </button>
+        <button id="btnPredict">
+          <span>✨</span>
+          <span>Predecir</span>
+        </button>
+      </div>
+
+      <div class="status-box">
+        <div class="status-text" id="log">👋 Presiona un botón para comenzar</div>
+        <div class="progress-bar-wrapper" id="progressContainer" style="display:none;">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText"></div>
+      </div>
+
+      <a href="/download" class="download-link">📥 Descargar Dataset</a>
+
+      <p class="info-text">
+        💡 Actualiza el dataset para obtener predicciones más precisas
+      </p>
+    </div>
+  </div>
+
+  <script src="app.js?v=3"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(()=>console.log('Error registrando Service Worker'))
+    }
+  </script>
 </body>
 </html>
