@@ -1,11 +1,12 @@
 const CACHE_NAME = 'tinka-cache-v1';
-const OFFLINE_URL = '/';
+const BASE_PATH = new URL('./', self.location).pathname;
+const OFFLINE_URL = BASE_PATH;
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.json'
+  BASE_PATH,
+  new URL('index.html', self.location).href,
+  new URL('app.js', self.location).href,
+  new URL('manifest.json', self.location).href
 ];
 
 // Instalar y cachear recursos

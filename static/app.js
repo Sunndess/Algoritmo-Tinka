@@ -6,14 +6,44 @@ if ('serviceWorker' in navigator) {
   }).catch(()=>{});
 }
 
+const API_BASE_URL = (window.API_BASE_URL || '').trim().replace(/\/$/, '');
+const RUNNING_ON_GITHUB_PAGES = location.hostname.endsWith('github.io');
+
 const log = document.getElementById('log');
 const btnUpdate = document.getElementById('btnUpdate');
 const btnPredict = document.getElementById('btnPredict');
+const downloadLink = document.querySelector('.download-link');
 const progressContainer = document.getElementById('progressContainer');
 const progressBar = document.getElementById('progressBar');
 const progressText = document.getElementById('progressText');
 
 let progressInterval = null;
+
+function apiUrl(path) {
+  if (!API_BASE_URL) {
+    return path;
+  }
+  return `${API_BASE_URL}${path}`;
+}
+
+async function apiFetch(path, options) {
+  if (!API_BASE_URL && RUNNING_ON_GITHUB_PAGES) {
+    throw new Error('GitHub Pages solo sirve archivos estáticos. Configura window.API_BASE_URL con la URL pública de tu backend Flask.');
+  }
+  return fetch(apiUrl(path), options);
+}
+
+if (downloadLink) {
+  if (API_BASE_URL) {
+    downloadLink.href = apiUrl('/download');
+  } else if (RUNNING_ON_GITHUB_PAGES) {
+    downloadLink.href = '#';
+    downloadLink.addEventListener('click', event => {
+      event.preventDefault();
+      setLog('Para descargar o actualizar necesitas un backend Flask fuera de GitHub Pages.', false, true);
+    });
+  }
+}
 
 function setProgress(percent) {
   progressBar.style.width = percent + '%';
@@ -130,7 +160,7 @@ btnUpdate.addEventListener('click', async ()=>{
   setLog('Descargando datos...', true, false, { progress: true });
   
   try{
-    const res = await fetch('/update',{method:'POST'});
+    const res = await apiFetch('/update',{method:'POST'});
     const j = await res.json();
     
     completeProgress();
@@ -155,7 +185,7 @@ btnPredict.addEventListener('click', async ()=>{
   setLog('Analizando patrones...', false);
   
   try{
-    const res = await fetch('/predict');
+    const res = await apiFetch('/predict');
     const j = await res.json();
     
     if(j.status==='ok') {

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TINKA - Sistema de Predicción de Lotería</title>
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <style>
     * {
       margin: 0;
@@ -368,8 +368,9 @@
 
   <script src="app.js?v=3"></script>
   <script>
+    window.API_BASE_URL = window.API_BASE_URL || '';
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log('Service Worker registrado'))
         .catch(()=>console.log('Error registrando Service Worker'))
     }
